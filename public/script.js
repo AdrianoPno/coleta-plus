@@ -1,4 +1,5 @@
-const apiURL = 'https://script.google.com/macros/library/d/1b89k4IBLnH0nhb1qpo991FqXbNCn6MQvf_u5FPxzA_yQflxW3JpjgmwY/1';
+const apiURL =
+  'https://script.google.com/macros/s/AKfycbzI-IPMj4Srr4jB3aYxgjv8Kyw8jX7R2BoKPtkom0CkgL75c3EKIjTFeAyJgFyosV7e_w/exec';
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -7,12 +8,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const container = document.getElementById('formulario-container');
     if (dados.length === 0) {
-      container.innerHTML = "<p>Sem registros pendentes.</p>";
+      container.innerHTML = '<p>Sem registros pendentes.</p>';
       return;
     }
 
-    dados.forEach(registro => {
-      const form = document.createElement("form");
+    dados.forEach((registro) => {
+      const form = document.createElement('form');
       form.innerHTML = `
         <h3>${registro.UPMR} - ${registro['Data da Coleta']} (${registro.Período})</h3>
         
@@ -66,42 +67,46 @@ document.addEventListener('DOMContentLoaded', async () => {
         <hr>
       `;
 
-      form.addEventListener("submit", async e => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(form);
         const payload = {
           timestamp: new Date().toISOString(),
-          upmr: formData.get("upmr"),
-          operador: formData.get("operador"),
-          placa: formData.get("placa"),
-          data: formData.get("data"),
-          periodo: formData.get("periodo"),
-          inicio: formData.get("inicio"),
-          fim: formData.get("fim"),
-          agenda: formData.get("agenda"),
-          setor: formData.get("setor"),
-          atendida: formData.get("atendida"),
-          execucao: formData.get("execucao"),
-          velocidade: formData.get("velocidade"),
-          ppi: formData.get("ppi"),
-          observacao: formData.get("observacoes"),
-          status: "Preenchido",
-          _linha: formData.get("_linha")
+          upmr: formData.get('upmr'),
+          operador: formData.get('operador'),
+          placa: formData.get('placa'),
+          data: formData.get('data'),
+          periodo: formData.get('periodo'),
+          inicio: formData.get('inicio'),
+          fim: formData.get('fim'),
+          agenda: formData.get('agenda'),
+          setor: formData.get('setor'),
+          atendida: formData.get('atendida'),
+          execucao: formData.get('execucao'),
+          velocidade: formData.get('velocidade'),
+          ppi: formData.get('ppi'),
+          observacao: formData.get('observacao'), // <--- Corrigido aqui
+          status: 'Preenchido',
+          _linha: formData.get('_linha'),
         };
 
         try {
           await fetch(apiURL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
           });
 
           form.remove();
-          const resposta = document.getElementById("resposta");
-          resposta.style.display = "block";
-          resposta.innerHTML = `<strong>Registro enviado:</strong><br>${JSON.stringify(payload, null, 2)}`;
+          const resposta = document.getElementById('resposta');
+          resposta.style.display = 'block';
+          resposta.innerHTML = `<strong>Registro enviado:</strong><br>${JSON.stringify(
+            payload,
+            null,
+            2
+          )}`;
         } catch (err) {
-          alert("Erro ao enviar os dados.");
+          alert('Erro ao enviar os dados.');
           console.error(err);
         }
       });
@@ -109,6 +114,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       container.appendChild(form);
     });
   } catch (error) {
-    console.error("Erro ao carregar os dados:", error);
+    console.error('Erro ao carregar os dados:', error);
   }
 });
