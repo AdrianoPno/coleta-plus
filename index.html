@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulário de Coleta - Envio ao Google Sheets</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    label { display: block; margin-top: 1rem; font-weight: bold; }
+    select, input, textarea, button {
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 0.25rem;
+    }
+    .info {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Registro de Coleta</h1>
+
+  <!-- Campo: UPMR -->
+  <label for="upmr">UPMR:</label>
+  <select id="upmr" onchange="atualizarPlacas()">
+    <option value="">-- Selecione a UPMR --</option>
+    <option value="GXP">GXP</option>
+    <option value="TRR">TRR</option>
+  </select>
+
+  <!-- Campo: Operador -->
+  <label for="operador">Nome do Operador(a):</label>
+  <select id="operador">
+    <option value="">-- Selecione o operador --</option>
+    <option value="Adriano">Adriano</option>
+    <option value="Kleiton">Kleiton</option>
+  </select>
+
+  <!-- Campo: Placa do Caminhão -->
+  <label for="placa">Placa do caminhão:</label>
+  <select id="placa"></select>
+
+  <!-- Campo: Data da Coleta -->
+  <label for="data">Data da coleta:</label>
+  <select id="data">
+    <option value="">-- Selecione a data --</option>
+    <option value="2025-06-16">16/06/2025 - Segunda-feira</option>
+    <option value="2025-06-17">17/06/2025 - Terça-feira</option>
+    <option value="2025-06-18">18/06/2025 - Quarta-feira</option>
+    <option value="2025-06-19">19/06/2025 - Quinta-feira</option>
+    <option value="2025-06-20">20/06/2025 - Sexta-feira</option>
+  </select>
+
+  <!-- Campo: Período -->
+  <label for="periodo">Período da coleta:</label>
+  <select id="periodo">
+    <option value="">-- Selecione o período --</option>
+    <option value="Manhã">Manhã</option>
+    <option value="Tarde">Tarde</option>
+  </select>
+
+  <!-- Horários de Viagem -->
+  <label for="inicio">Horário de início da viagem:</label>
+  <input type="time" id="inicio">
+
+  <label for="fim">Horário de fim da viagem:</label>
+  <input type="time" id="fim">
+
+  <!-- Status da Agenda -->
+  <label for="atendida">A agenda foi atendida?</label>
+  <select id="atendida">
+    <option value="">-- Selecione --</option>
+    <option>Atendido</option>
+    <option>Atendido parcialmente</option>
+    <option>Não atendido</option>
+  </select>
+
+  <!-- Execução -->
+  <label for="execucao">Execução:</label>
+  <select id="execucao">
+    <option value="">-- Selecione --</option>
+    <option>Executado parcialmente, com áreas sem atendimento</option>
+    <option>Executado por todo o setor e todas as ruas</option>
+    <option>Não atendeu setorização do dia</option>
+  </select>
+
+  <!-- Velocidade e PPI -->
+  <label for="velocidade">Velocidade padrão 10km/h?</label>
+  <select id="velocidade">
+    <option value="">-- Selecione --</option>
+    <option>Sim</option>
+    <option>Não</option>
+  </select>
+
+  <label for="ppi">Houveram paradas acima de 20 minutos?</label>
+  <select id="ppi">
+    <option value="">-- Selecione --</option>
+    <option>Sim</option>
+    <option>Não</option>
+  </select>
+
+  <!-- Observações -->
+  <label for="observacao">Observações:</label>
+  <textarea id="observacao" rows="3"></textarea>
+
+  <!-- Botão de envio -->
+  <button onclick="enviarDados()">Enviar para planilha</button>
+
+  <div class="info" id="resposta" style="display:none;"></div>
+
+  <script>
+    // Dicionário de placas por UPMR
+    const placasPorUPMR = {
+      GXP: ["GXP1234", "GXP5678"],
+      TRR: ["TRR4321", "TRR8765"]
+    };
+
+    // Setores vinculados aos dias da semana
+    const diasSemana = {
+      "2025-06-16": "Setor 1",
+      "2025-06-17": "Setor 2",
+      "2025-06-18": "Setor 3",
+      "2025-06-19": "Setor 4",
+      "2025-06-20": "Setor 5"
+    };
+
+    // Atualiza as placas com base na UPMR selecionada
+    function atualizarPlacas() {
+      const upmr = document.getElementById('upmr').value;
+      const placaSelect = document.getElementById('placa');
+      placaSelect.innerHTML = '<option value="">-- Selecione a placa --</option>';
+      if (placasPorUPMR[upmr]) {
+        placasPorUPMR[upmr].forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p;
+          opt.textContent = p;
+          placaSelect.appendChild(opt);
+        });
+      }
+    }
+
+    // Envia os dados para o Google Sheets via Apps Script
+    function enviarDados() {
+      const data = document.getElementById('data').value;
+      const setor = diasSemana[data] || "";
+      const agenda = `${setor} - ${data}`;
+
+      const payload = {
+        timestamp: new Date().toISOString(),
+        upmr: document.getElementById('upmr').value,
+        operador: document.getElementById('operador').value,
+        placa: document.getElementById('placa').value,
+        data,
+        periodo: document.getElementById('periodo').value,
+        inicio: document.getElementById('inicio').value,
+        fim: document.getElementById('fim').value,
+        agenda,
+        setor,
+        atendida: document.getElementById('atendida').value,
+        execucao: document.getElementById('execucao').value,
+        velocidade: document.getElementById('velocidade').value,
+        ppi: document.getElementById('ppi').value,
+        observacao: document.getElementById('observacao').value,
+        status: "Preenchido"
+      };
+
+      // Substitua a URL abaixo pela do seu Apps Script publicado
+      fetch("https://script.google.com/macros/s/SEU_ID/exec", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload)
+})
+.then(res => res.text())
+.then(text => console.log("Resposta do Apps Script:", text))
+.catch(err => console.error("Erro:", err));
+
+      // Exibe os dados enviados como confirmação
+      const resposta = document.getElementById('resposta');
+      resposta.innerHTML = `<strong>Dados enviados com sucesso!</strong><br>${JSON.stringify(payload, null, 2)}`;
+      resposta.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
