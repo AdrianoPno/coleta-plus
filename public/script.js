@@ -1,5 +1,3 @@
-// script.js
-
 const apiURL =
   'https://script.google.com/macros/s/AKfycbzI-IPMj4Srr4jB3aYxgjv8Kyw8jX7R2BoKPtkom0CkgL75c3EKIjTFeAyJgFyosV7e_w/exec';
 
@@ -141,6 +139,27 @@ function filtrarFormularios() {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
+
+      // 🚫 Verificação de campos obrigatórios
+      const obrigatorios = [
+        'operador',
+        'inicio',
+        'fim',
+        'atendida',
+        'execucao',
+        'velocidade',
+        'ppi',
+      ];
+      const invalido = obrigatorios.some(
+        (campo) =>
+          !formData.get(campo) || formData.get(campo) === '-- Selecione --'
+      );
+
+      if (invalido) {
+        alert('Preencha todos os campos obrigatórios antes de enviar.');
+        return;
+      }
+
       const payload = {
         timestamp: new Date().toISOString(),
         upmr: formData.get('upmr'),
