@@ -171,12 +171,12 @@
       // Substitua a URL abaixo pela do seu Apps Script publicado
       fetch("https://script.google.com/macros/s/AKfycbx6KUnfHEggroTlPLA38FFzflsL9PXuak5Smt8D1z6dOT4TRwezmZXHjljqLspg2i0-EA/exec", {
   method: "POST",
+  mode: "no-cors", // mantém silencioso, sem bloquear por CORS
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(payload)
-})
-.then(res => res.text())
-.then(text => console.log("Resposta do Apps Script:", text))
-.catch(err => console.error("Erro:", err));
+}).catch(err => {
+  console.error("Erro:", err);
+});
 
       // Exibe os dados enviados como confirmação
       const resposta = document.getElementById('resposta');
