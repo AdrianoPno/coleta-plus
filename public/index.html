@@ -1,15 +1,35 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Formulário de Coleta</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <h1>Formulário de Coleta</h1>
-  <div id="formulario-container"></div>
-  <div class="info" id="resposta" style="display:none;"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Formulário de Coleta</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Formulário de Coleta</h1>
 
-  <script src="script.js"></script>
-</body>
+      <!-- Filtros -->
+      <div class="filtros">
+        <label for="filtro-upmr">Selecione a UPMR:</label>
+        <select id="filtro-upmr" onchange="filtrarFormularios()">
+          <option value="">-- UPMR --</option>
+        </select>
+
+        <label for="filtro-data">Selecione a Data:</label>
+        <select id="filtro-data" onchange="filtrarFormularios()">
+          <option value="">-- Data --</option>
+        </select>
+      </div>
+
+      <!-- Container dos formulários -->
+      <div id="formulario-container"></div>
+
+      <!-- Mensagem de confirmação -->
+      <div id="resposta" class="resposta" style="display: none"></div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
 </html>

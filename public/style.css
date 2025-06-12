@@ -1,25 +1,97 @@
+/* style.css - Tema Ecológico */
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f7f8fa;
+  color: #16421f;
   margin: 2rem;
+}
+
+h1,
+h2,
+h3 {
+  color: #16421f;
 }
 
 label {
   display: block;
   margin-top: 1rem;
-  font-weight: bold;
+  font-weight: 500;
+  color: #16421f;
 }
 
-select, input, textarea, button {
+select,
+input,
+textarea,
+button {
   padding: 0.5rem;
   width: 100%;
   max-width: 600px;
   margin-top: 0.25rem;
+  border-radius: 6px;
+  border: 1px solid #c8d6c3;
+  font-size: 1rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  background-color: #4caf50;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #3e8e41;
+}
+
+.container {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  max-width: 700px;
+  margin: auto;
 }
 
 .info {
   margin-top: 1.5rem;
   padding: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid #c8d6c3;
   border-radius: 6px;
-  background-color: #f9f9f9;
+  background-color: #edf4ed;
+  color: #16421f;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+hr {
+  margin: 2rem 0;
+  border: 0;
+  height: 1px;
+  background-color: #d9e2d3;
+}
+
+.form-bloco {
+  border: 1px solid #d9e2d3;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  margin-bottom: 2rem;
+}
+
+#resposta {
+  white-space: pre-wrap;
 }
