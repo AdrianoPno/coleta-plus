@@ -140,18 +140,15 @@
       }
     }
 
-    function obterDiaSemana(data) {
-      return new Date(data).toLocaleDateString("pt-BR", {
-        weekday: "long",
-        timeZone: "America/Sao_Paulo"
-      });
-    }
-
     function enviarDados() {
       const data = document.getElementById('data').value;
       const setor = diasSemana[data] || "";
-      const diaSemana = obterDiaSemana(data);
-      const agenda = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+
+      const [ano, mes, dia] = data.split("-");
+      const dataLocal = new Date(ano, mes - 1, dia);
+      const diaSemana = dataLocal.toLocaleDateString("pt-BR", { weekday: "long" });
+
+      const agenda = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}`; // Capitaliza primeira letra
 
       const payload = {
         timestamp: new Date().toISOString(),
@@ -162,8 +159,8 @@
         periodo: document.getElementById('periodo').value,
         inicio: document.getElementById('inicio').value,
         fim: document.getElementById('fim').value,
-        agenda,
-        setor,
+        agenda, // Dia da semana
+        setor,  // Setor fixo por data
         atendida: document.getElementById('atendida').value,
         execucao: document.getElementById('execucao').value,
         velocidade: document.getElementById('velocidade').value,
