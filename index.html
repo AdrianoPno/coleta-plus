@@ -24,7 +24,7 @@
 <body>
   <h1>Registro de Coleta</h1>
 
-  <!-- UPMR -->
+  <!-- Campo: UPMR -->
   <label for="upmr">UPMR:</label>
   <select id="upmr" onchange="atualizarPlacas()">
     <option value="">-- Selecione a UPMR --</option>
@@ -32,7 +32,7 @@
     <option value="TRR">TRR</option>
   </select>
 
-  <!-- Operador -->
+  <!-- Campo: Operador -->
   <label for="operador">Nome do Operador(a):</label>
   <select id="operador">
     <option value="">-- Selecione o operador --</option>
@@ -40,11 +40,11 @@
     <option value="Kleiton">Kleiton</option>
   </select>
 
-  <!-- Placa do veículo -->
+  <!-- Campo: Placa do Caminhão -->
   <label for="placa">Placa do caminhão:</label>
   <select id="placa"></select>
 
-  <!-- Data da viagem -->
+  <!-- Campo: Data da Coleta -->
   <label for="data">Data da coleta:</label>
   <select id="data">
     <option value="">-- Selecione a data --</option>
@@ -55,7 +55,7 @@
     <option value="2025-06-20">20/06/2025 - Sexta-feira</option>
   </select>
 
-  <!-- Período -->
+  <!-- Campo: Período -->
   <label for="periodo">Período da coleta:</label>
   <select id="periodo">
     <option value="">-- Selecione o período --</option>
@@ -63,14 +63,14 @@
     <option value="Tarde">Tarde</option>
   </select>
 
-  <!-- Horários -->
+  <!-- Horários de Viagem -->
   <label for="inicio">Horário de início da viagem:</label>
   <input type="time" id="inicio">
 
   <label for="fim">Horário de fim da viagem:</label>
   <input type="time" id="fim">
 
-  <!-- Agenda atendida -->
+  <!-- Status da Agenda -->
   <label for="atendida">A agenda foi atendida?</label>
   <select id="atendida">
     <option value="">-- Selecione --</option>
@@ -88,7 +88,7 @@
     <option>Não atendeu setorização do dia</option>
   </select>
 
-  <!-- Velocidade -->
+  <!-- Velocidade e PPI -->
   <label for="velocidade">Velocidade padrão 10km/h?</label>
   <select id="velocidade">
     <option value="">-- Selecione --</option>
@@ -96,7 +96,6 @@
     <option>Não</option>
   </select>
 
-  <!-- PPI -->
   <label for="ppi">Houveram paradas acima de 20 minutos?</label>
   <select id="ppi">
     <option value="">-- Selecione --</option>
@@ -108,19 +107,17 @@
   <label for="observacao">Observações:</label>
   <textarea id="observacao" rows="3"></textarea>
 
-  <!-- Enviar -->
+  <!-- Botão de envio -->
   <button onclick="enviarDados()">Enviar para planilha</button>
 
   <div class="info" id="resposta" style="display:none;"></div>
 
   <script>
-    // Mock de placas por UPMR
     const placasPorUPMR = {
       GXP: ["GXP1234", "GXP5678"],
       TRR: ["TRR4321", "TRR8765"]
     };
 
-    // Setores por data
     const diasSemana = {
       "2025-06-16": "Setor 1",
       "2025-06-17": "Setor 2",
@@ -129,7 +126,6 @@
       "2025-06-20": "Setor 5"
     };
 
-    // Atualiza placas ao trocar UPMR
     function atualizarPlacas() {
       const upmr = document.getElementById('upmr').value;
       const placaSelect = document.getElementById('placa');
@@ -144,16 +140,18 @@
       }
     }
 
-    // Função principal de envio
+    function obterDiaSemana(data) {
+      return new Date(data).toLocaleDateString("pt-BR", {
+        weekday: "long",
+        timeZone: "America/Sao_Paulo"
+      });
+    }
+
     function enviarDados() {
       const data = document.getElementById('data').value;
       const setor = diasSemana[data] || "";
-
-      // Gera string do dia da semana
-      const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-      const dataObj = new Date(data);
-      const diaSemanaStr = dias[dataObj.getDay()];
-      const agenda = `${diaSemanaStr} - ${data}`;
+      const diaSemana = obterDiaSemana(data);
+      const agenda = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
 
       const payload = {
         timestamp: new Date().toISOString(),
@@ -164,8 +162,8 @@
         periodo: document.getElementById('periodo').value,
         inicio: document.getElementById('inicio').value,
         fim: document.getElementById('fim').value,
-        agenda,  // Ex: Segunda-feira - 2025-06-16
-        setor,   // Ex: Setor 1
+        agenda,
+        setor,
         atendida: document.getElementById('atendida').value,
         execucao: document.getElementById('execucao').value,
         velocidade: document.getElementById('velocidade').value,
@@ -174,7 +172,6 @@
         status: "Preenchido"
       };
 
-      // Substitua pela URL do seu Apps Script
       fetch("https://script.google.com/macros/s/AKfycbx6KUnfHEggroTlPLA38FFzflsL9PXuak5Smt8D1z6dOT4TRwezmZXHjljqLspg2i0-EA/exec", {
         method: "POST",
         mode: "no-cors",
@@ -184,7 +181,6 @@
         console.error("Erro:", err);
       });
 
-      // Mostra payload no final da tela
       const resposta = document.getElementById('resposta');
       resposta.innerHTML = `<strong>Dados enviados com sucesso!</strong><br>${JSON.stringify(payload, null, 2)}`;
       resposta.style.display = 'block';
