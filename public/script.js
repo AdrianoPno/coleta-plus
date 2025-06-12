@@ -33,6 +33,11 @@ function preencherFiltros(registros) {
   });
 
   const upmrSelect = document.getElementById('filtro-upmr');
+  const optU = document.createElement('option');
+  optU.value = '';
+  optU.textContent = '-- Selecione --';
+  upmrSelect.appendChild(optU);
+
   upmrSet.forEach((upmr) => {
     const opt = document.createElement('option');
     opt.value = upmr;
@@ -41,6 +46,11 @@ function preencherFiltros(registros) {
   });
 
   const dataSelect = document.getElementById('filtro-data');
+  const optD = document.createElement('option');
+  optD.value = '';
+  optD.textContent = '-- Selecione --';
+  dataSelect.appendChild(optD);
+
   [...dataSet].sort().forEach((data) => {
     const opt = document.createElement('option');
     opt.value = data;
@@ -85,6 +95,7 @@ function filtrarFormularios() {
 
       <label>Agenda foi atendida?</label>
       <select name="atendida" required>
+        <option value="">-- Selecione --</option>
         <option>Atendido</option>
         <option>Atendido parcialmente</option>
         <option>Não atendido</option>
@@ -92,6 +103,7 @@ function filtrarFormularios() {
 
       <label>Execução:</label>
       <select name="execucao" required>
+        <option value="">-- Selecione --</option>
         <option>Executado por todo o setor e todas as ruas</option>
         <option>Executado parcialmente, com áreas sem atendimento</option>
         <option>Não atendeu setorização do dia</option>
@@ -99,12 +111,14 @@ function filtrarFormularios() {
 
       <label>Velocidade padrão 10km/h?</label>
       <select name="velocidade" required>
+        <option value="">-- Selecione --</option>
         <option>Sim</option>
         <option>Não</option>
       </select>
 
       <label>Paradas acima de 20 minutos?</label>
       <select name="ppi" required>
+        <option value="">-- Selecione --</option>
         <option>Sim</option>
         <option>Não</option>
       </select>
@@ -150,6 +164,7 @@ function filtrarFormularios() {
       try {
         await fetch(apiURL, {
           method: 'POST',
+          mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
@@ -157,11 +172,7 @@ function filtrarFormularios() {
         form.remove();
         const resposta = document.getElementById('resposta');
         resposta.style.display = 'block';
-        resposta.innerHTML = `<strong>Registro enviado:</strong><br>${JSON.stringify(
-          payload,
-          null,
-          2
-        )}`;
+        resposta.innerHTML = `<strong>Registro enviado!</strong>`;
       } catch (err) {
         alert('Erro ao enviar os dados.');
         console.error(err);
