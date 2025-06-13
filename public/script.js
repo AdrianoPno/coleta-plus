@@ -48,13 +48,21 @@ function agruparCaminhoes(lista) {
   return agrupado;
 }
 
-function agruparCaminhoesPorData(lista) {
+function agruparCaminhoesPorData() {
   const agrupado = {};
-  lista.forEach(({ upmr, data, placa }) => {
+
+  todosRegistros.forEach((registro) => {
+    const upmr = registro.UPMR;
+    const data = registro['Data da Coleta'];
+    const caminhao = registro['Caminhão'];
+
     const chave = `${upmr}-${data}`;
     if (!agrupado[chave]) agrupado[chave] = [];
-    if (!agrupado[chave].includes(placa)) agrupado[chave].push(placa);
+    if (caminhao && !agrupado[chave].includes(caminhao)) {
+      agrupado[chave].push(caminhao);
+    }
   });
+
   return agrupado;
 }
 
