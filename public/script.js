@@ -126,7 +126,9 @@ function filtrarFormularios() {
 
   const registrosFiltrados = todosRegistros.filter(
     (r) =>
-      r.UPMR === upmr && r['Data da Coleta'] === data && r['Placa'] === caminhao
+      r.UPMR === upmr &&
+      r['Data da Coleta'] === data &&
+      r['Caminhão'] === caminhao
   );
 
   if (registrosFiltrados.length === 0) {
@@ -195,7 +197,7 @@ function filtrarFormularios() {
 
       <input type="hidden" name="_linha" value="${registro._linha}">
       <input type="hidden" name="upmr" value="${registro.UPMR}">
-      <input type="hidden" name="placa" value="${registro['Placa']}">
+      <input type="hidden" name="placa" value="${registro['Caminhão']}">
       <input type="hidden" name="data" value="${registro['Data da Coleta']}">
       <input type="hidden" name="periodo" value="${registro['Período']}">
       <input type="hidden" name="setor" value="${registro.Setor}">
