@@ -202,4 +202,26 @@ function filtrarFormularios() {
 
     container.appendChild(form);
   });
+
+  function preencherFiltros(registros) {
+    const filtroUPMR = document.getElementById('filtro-upmr');
+    const filtroData = document.getElementById('filtro-data');
+
+    const upmrs = [...new Set(registros.map((r) => r.UPMR))];
+    const datas = [...new Set(registros.map((r) => r['Data da Coleta']))];
+
+    upmrs.sort().forEach((u) => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      opt.textContent = u;
+      filtroUPMR.appendChild(opt);
+    });
+
+    datas.sort().forEach((d) => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = new Date(d).toLocaleDateString('pt-BR');
+      filtroData.appendChild(opt);
+    });
+  }
 }
