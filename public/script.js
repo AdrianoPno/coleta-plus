@@ -260,9 +260,38 @@ function filtrarFormularios() {
         });
 
         form.remove();
+
+        const container = document.getElementById('formulario-container');
+        const filtros = document.getElementById('filtros-container');
         const resposta = document.getElementById('resposta');
-        resposta.style.display = 'block';
-        resposta.innerHTML = `<strong>Registro enviado!</strong>`;
+
+        // Se todos os formulários daquela viagem foram enviados
+        if (container.querySelectorAll('form').length === 0) {
+          resposta.style.display = 'block';
+          resposta.innerHTML = `
+    <p style="color: green; font-weight: bold;">✔ Todas as viagens preenchidas!</p>
+    <button id="novo-registro" style="margin-top: 10px;">Novo Registro</button>
+  `;
+
+          // Oculta os filtros
+          filtros.style.display = 'none';
+
+          // Ao clicar em Novo Registro, volta para a tela inicial
+          document
+            .getElementById('novo-registro')
+            .addEventListener('click', () => {
+              resposta.style.display = 'none';
+              filtros.style.display = 'block';
+
+              // Limpa filtros e formulários
+              document.getElementById('filtro-upmr').value = '';
+              document.getElementById('filtro-data').innerHTML =
+                '<option value="">-- Data --</option>';
+              document.getElementById('filtro-caminhao').innerHTML =
+                '<option value="">-- Caminhão --</option>';
+              container.innerHTML = '';
+            });
+        }
       } catch (err) {
         alert('Erro ao enviar os dados.');
         console.error(err);
