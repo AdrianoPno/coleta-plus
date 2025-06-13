@@ -6,28 +6,6 @@ let todosRegistros = [];
 let operadoresPorUPMR = {};
 let caminhoesPorUPMRPeriodo = {};
 
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch(apiURL);
-    const { registros, operadores, caminhoes } = await res.json();
-
-    todosRegistros = registros || [];
-    operadoresPorUPMR = agruparOperadores(operadores);
-    caminhoesPorUPMRPeriodo = agruparCaminhoes(caminhoes);
-
-    if (todosRegistros.length === 0) {
-      document.getElementById('formulario-container').innerHTML =
-        '<p>Sem registros pendentes.</p>';
-      return;
-    }
-
-    preencherFiltros(todosRegistros);
-    filtrarFormularios();
-  } catch (err) {
-    console.error('Erro ao carregar os dados:', err);
-  }
-});
-
 function agruparOperadores(lista) {
   const agrupado = {};
   lista.forEach(({ upmr, nome }) => {
@@ -47,14 +25,56 @@ function agruparCaminhoes(lista) {
   return agrupado;
 }
 
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await fetch(apiURL);
+    const { registros, operadores, caminhoes } = await res.json();
+
+    todosRegistros = registros || [];
+    operadoresPorUPMR = agruparOperadores(operadores);
+    caminhoesPorUPMRPeriodo = agruparCaminhoes(caminhoes);
+
+    preencherFiltros(todosRegistros);
+  } catch (err) {
+    console.error('Erro ao carregar os dados:', err);
+  }
+});
+
+function preencherFiltros(registros) {
+  const filtroUPMR = document.getElementById('filtro-upmr');
+  const filtroData = document.getElementById('filtro-data');
+
+  const upmrs = [...new Set(registros.map((r) => r.UPMR))];
+  const datas = [...new Set(registros.map((r) => r['Data da Coleta']))];
+
+  upmrs.sort().forEach((u) => {
+    const opt = document.createElement('option');
+    opt.value = u;
+    opt.textContent = u;
+    filtroUPMR.appendChild(opt);
+  });
+
+  datas.sort().forEach((d) => {
+    const opt = document.createElement('option');
+    opt.value = d;
+    opt.textContent = new Date(d).toLocaleDateString('pt-BR');
+    filtroData.appendChild(opt);
+  });
+
+  filtroUPMR.addEventListener('change', filtrarFormularios);
+  filtroData.addEventListener('change', filtrarFormularios);
+}
+
 function filtrarFormularios() {
   const upmr = document.getElementById('filtro-upmr').value;
   const data = document.getElementById('filtro-data').value;
   const container = document.getElementById('formulario-container');
   container.innerHTML = '';
 
+  if (!upmr || !data) return;
+
   const registrosFiltrados = todosRegistros.filter(
-    (r) => (!upmr || r.UPMR === upmr) && (!data || r['Data da Coleta'] === data)
+    (r) => r.UPMR === upmr && r['Data da Coleta'] === data
   );
 
   if (registrosFiltrados.length === 0) {
@@ -66,15 +86,12 @@ function filtrarFormularios() {
     const form = document.createElement('form');
     form.classList.add('formulario');
 
-    // Preenchendo operador e placa com base nos mapas
     const operadores = operadoresPorUPMR[registro.UPMR] || [];
     const placas =
       caminhoesPorUPMRPeriodo[`${registro.UPMR}-${registro['Período']}`] || [];
-
     const operadorOptions = operadores
       .map((nome) => `<option value="${nome}">${nome}</option>`)
       .join('');
-
     const placa = placas.length > 0 ? placas[0] : '';
 
     form.innerHTML = `
@@ -156,7 +173,6 @@ function filtrarFormularios() {
         (campo) =>
           !formData.get(campo) || formData.get(campo) === '-- Selecione --'
       );
-
       if (invalido) {
         alert('Preencha todos os campos obrigatórios antes de enviar.');
         return;
@@ -194,6 +210,13 @@ function filtrarFormularios() {
         const resposta = document.getElementById('resposta');
         resposta.style.display = 'block';
         resposta.innerHTML = `<strong>Registro enviado!</strong>`;
+
+        setTimeout(() => {
+          resposta.style.display = 'none';
+          document.getElementById('filtro-upmr').value = '';
+          document.getElementById('filtro-data').value = '';
+          document.getElementById('formulario-container').innerHTML = '';
+        }, 3000);
       } catch (err) {
         alert('Erro ao enviar os dados.');
         console.error(err);
@@ -201,27 +224,5 @@ function filtrarFormularios() {
     });
 
     container.appendChild(form);
-  });
-}
-
-function preencherFiltros(registros) {
-  const filtroUPMR = document.getElementById('filtro-upmr');
-  const filtroData = document.getElementById('filtro-data');
-
-  const upmrs = [...new Set(registros.map((r) => r.UPMR))];
-  const datas = [...new Set(registros.map((r) => r['Data da Coleta']))];
-
-  upmrs.sort().forEach((u) => {
-    const opt = document.createElement('option');
-    opt.value = u;
-    opt.textContent = u;
-    filtroUPMR.appendChild(opt);
-  });
-
-  datas.sort().forEach((d) => {
-    const opt = document.createElement('option');
-    opt.value = d;
-    opt.textContent = new Date(d).toLocaleDateString('pt-BR');
-    filtroData.appendChild(opt);
   });
 }
