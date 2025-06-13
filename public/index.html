@@ -11,15 +11,20 @@
       <h1>Formulário de Coleta</h1>
 
       <!-- Filtros -->
-      <div class="filtros">
+      <div class="filtros" id="filtros-container">
         <label for="filtro-upmr">Selecione a UPMR:</label>
-        <select id="filtro-upmr" onchange="filtrarFormularios()">
+        <select id="filtro-upmr">
           <option value="">-- UPMR --</option>
         </select>
 
         <label for="filtro-data">Selecione a Data:</label>
-        <select id="filtro-data" onchange="filtrarFormularios()">
+        <select id="filtro-data">
           <option value="">-- Data --</option>
+        </select>
+
+        <label for="filtro-caminhao">Selecione o Caminhão:</label>
+        <select id="filtro-caminhao" onchange="filtrarFormularios()">
+          <option value="">-- Caminhão --</option>
         </select>
       </div>
 

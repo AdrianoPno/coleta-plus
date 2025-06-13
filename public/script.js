@@ -5,6 +5,29 @@ const apiURL =
 let todosRegistros = [];
 let operadoresPorUPMR = {};
 let caminhoesPorUPMRPeriodo = {};
+let caminhoesPorUPMRData = {};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await fetch(apiURL);
+    const { registros, operadores, caminhoes } = await res.json();
+
+    todosRegistros = registros || [];
+    operadoresPorUPMR = agruparOperadores(operadores);
+    caminhoesPorUPMRPeriodo = agruparCaminhoes(caminhoes);
+    caminhoesPorUPMRData = agruparCaminhoesPorData(caminhoes);
+
+    if (todosRegistros.length === 0) {
+      document.getElementById('formulario-container').innerHTML =
+        '<p>Sem registros pendentes.</p>';
+      return;
+    }
+
+    preencherFiltros(todosRegistros);
+  } catch (err) {
+    console.error('Erro ao carregar os dados:', err);
+  }
+});
 
 function agruparOperadores(lista) {
   const agrupado = {};
@@ -25,28 +48,22 @@ function agruparCaminhoes(lista) {
   return agrupado;
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch(apiURL);
-    const { registros, operadores, caminhoes } = await res.json();
-
-    todosRegistros = registros || [];
-    operadoresPorUPMR = agruparOperadores(operadores);
-    caminhoesPorUPMRPeriodo = agruparCaminhoes(caminhoes);
-
-    preencherFiltros(todosRegistros);
-  } catch (err) {
-    console.error('Erro ao carregar os dados:', err);
-  }
-});
+function agruparCaminhoesPorData(lista) {
+  const agrupado = {};
+  lista.forEach(({ upmr, data, placa }) => {
+    const chave = `${upmr}-${data}`;
+    if (!agrupado[chave]) agrupado[chave] = [];
+    if (!agrupado[chave].includes(placa)) agrupado[chave].push(placa);
+  });
+  return agrupado;
+}
 
 function preencherFiltros(registros) {
   const filtroUPMR = document.getElementById('filtro-upmr');
   const filtroData = document.getElementById('filtro-data');
+  const filtroCaminhao = document.getElementById('filtro-caminhao');
 
   const upmrs = [...new Set(registros.map((r) => r.UPMR))];
-  const datas = [...new Set(registros.map((r) => r['Data da Coleta']))];
-
   upmrs.sort().forEach((u) => {
     const opt = document.createElement('option');
     opt.value = u;
@@ -54,27 +71,54 @@ function preencherFiltros(registros) {
     filtroUPMR.appendChild(opt);
   });
 
-  datas.sort().forEach((d) => {
-    const opt = document.createElement('option');
-    opt.value = d;
-    opt.textContent = new Date(d).toLocaleDateString('pt-BR');
-    filtroData.appendChild(opt);
+  filtroUPMR.addEventListener('change', () => {
+    filtroData.innerHTML = '<option value="">-- Data --</option>';
+    filtroCaminhao.innerHTML = '<option value="">-- Caminhão --</option>';
+
+    const upmr = filtroUPMR.value;
+    const datas = [
+      ...new Set(
+        todosRegistros
+          .filter((r) => r.UPMR === upmr)
+          .map((r) => r['Data da Coleta'])
+      ),
+    ];
+    datas.sort().forEach((d) => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = new Date(d).toLocaleDateString('pt-BR');
+      filtroData.appendChild(opt);
+    });
   });
 
-  filtroUPMR.addEventListener('change', filtrarFormularios);
-  filtroData.addEventListener('change', filtrarFormularios);
+  filtroData.addEventListener('change', () => {
+    filtroCaminhao.innerHTML = '<option value="">-- Caminhão --</option>';
+
+    const upmr = filtroUPMR.value;
+    const data = filtroData.value;
+    const chave = `${upmr}-${data}`;
+    const placas = caminhoesPorUPMRData[chave] || [];
+    placas.forEach((p) => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      filtroCaminhao.appendChild(opt);
+    });
+  });
+
+  filtroCaminhao.addEventListener('change', filtrarFormularios);
 }
 
 function filtrarFormularios() {
   const upmr = document.getElementById('filtro-upmr').value;
   const data = document.getElementById('filtro-data').value;
+  const caminhao = document.getElementById('filtro-caminhao').value;
   const container = document.getElementById('formulario-container');
   container.innerHTML = '';
 
-  if (!upmr || !data) return;
-
   const registrosFiltrados = todosRegistros.filter(
-    (r) => r.UPMR === upmr && r['Data da Coleta'] === data
+    (r) =>
+      r.UPMR === upmr && r['Data da Coleta'] === data && r['Placa'] === caminhao
   );
 
   if (registrosFiltrados.length === 0) {
@@ -87,12 +131,9 @@ function filtrarFormularios() {
     form.classList.add('formulario');
 
     const operadores = operadoresPorUPMR[registro.UPMR] || [];
-    const placas =
-      caminhoesPorUPMRPeriodo[`${registro.UPMR}-${registro['Período']}`] || [];
     const operadorOptions = operadores
       .map((nome) => `<option value="${nome}">${nome}</option>`)
       .join('');
-    const placa = placas.length > 0 ? placas[0] : '';
 
     form.innerHTML = `
       <h3>${registro.UPMR} - ${new Date(
@@ -146,7 +187,7 @@ function filtrarFormularios() {
 
       <input type="hidden" name="_linha" value="${registro._linha}">
       <input type="hidden" name="upmr" value="${registro.UPMR}">
-      <input type="hidden" name="placa" value="${placa}">
+      <input type="hidden" name="placa" value="${registro['Placa']}">
       <input type="hidden" name="data" value="${registro['Data da Coleta']}">
       <input type="hidden" name="periodo" value="${registro['Período']}">
       <input type="hidden" name="setor" value="${registro.Setor}">
@@ -169,10 +210,12 @@ function filtrarFormularios() {
         'velocidade',
         'ppi',
       ];
+
       const invalido = obrigatorios.some(
         (campo) =>
           !formData.get(campo) || formData.get(campo) === '-- Selecione --'
       );
+
       if (invalido) {
         alert('Preencha todos os campos obrigatórios antes de enviar.');
         return;
@@ -210,13 +253,6 @@ function filtrarFormularios() {
         const resposta = document.getElementById('resposta');
         resposta.style.display = 'block';
         resposta.innerHTML = `<strong>Registro enviado!</strong>`;
-
-        setTimeout(() => {
-          resposta.style.display = 'none';
-          document.getElementById('filtro-upmr').value = '';
-          document.getElementById('filtro-data').value = '';
-          document.getElementById('formulario-container').innerHTML = '';
-        }, 3000);
       } catch (err) {
         alert('Erro ao enviar os dados.');
         console.error(err);
