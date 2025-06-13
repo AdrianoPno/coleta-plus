@@ -1,5 +1,6 @@
-/* style.css - Tema Ecológico */
+/* style.css - Tema Ecológico com melhorias */
 
+/* Base */
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #f7f8fa;
@@ -31,6 +32,17 @@ button {
   border-radius: 6px;
   border: 1px solid #c8d6c3;
   font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Aparência moderna para SELECT */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%2316421f' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  background-color: #fff;
 }
 
 textarea {
@@ -92,6 +104,36 @@ hr {
   margin-bottom: 2rem;
 }
 
+/* Mensagem de sucesso mais visual */
 #resposta {
   white-space: pre-wrap;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-left: 5px solid #4caf50;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+/* Responsividade para celular */
+@media (max-width: 480px) {
+  body {
+    margin: 1rem;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+
+  select,
+  input,
+  textarea,
+  button {
+    font-size: 0.95rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
 }

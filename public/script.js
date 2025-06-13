@@ -1,12 +1,19 @@
+// Adicionando suporte dinâmico aos operadores e caminhões com base no retorno do doGet()
 const apiURL =
-  'https://script.google.com/macros/s/AKfycbyyDte4bIqL5AfzJ92yJDzyPCYhNeDxL42CXknH3H3YUHpT8zXVfugobH4yn5RkllMVHQ/exec';
+  'https://script.google.com/macros/s/AKfycbzI-IPMj4Srr4jB3aYxgjv8Kyw8jX7R2BoKPtkom0CkgL75c3EKIjTFeAyJgFyosV7e_w/exec';
 
 let todosRegistros = [];
+let operadoresPorUPMR = {};
+let caminhoesPorUPMRPeriodo = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const res = await fetch(apiURL);
-    todosRegistros = await res.json();
+    const { registros, operadores, caminhoes } = await res.json();
+
+    todosRegistros = registros || [];
+    operadoresPorUPMR = agruparOperadores(operadores);
+    caminhoesPorUPMRPeriodo = agruparCaminhoes(caminhoes);
 
     if (todosRegistros.length === 0) {
       document.getElementById('formulario-container').innerHTML =
@@ -21,41 +28,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-function preencherFiltros(registros) {
-  const upmrSet = new Set();
-  const dataSet = new Set();
-
-  registros.forEach((reg) => {
-    upmrSet.add(reg.UPMR);
-    dataSet.add(reg['Data da Coleta']);
+function agruparOperadores(lista) {
+  const agrupado = {};
+  lista.forEach(({ upmr, nome }) => {
+    if (!agrupado[upmr]) agrupado[upmr] = [];
+    agrupado[upmr].push(nome);
   });
+  return agrupado;
+}
 
-  const upmrSelect = document.getElementById('filtro-upmr');
-  const optU = document.createElement('option');
-  optU.value = '';
-  optU.textContent = '-- Selecione --';
-  upmrSelect.appendChild(optU);
-
-  upmrSet.forEach((upmr) => {
-    const opt = document.createElement('option');
-    opt.value = upmr;
-    opt.textContent = upmr;
-    upmrSelect.appendChild(opt);
+function agruparCaminhoes(lista) {
+  const agrupado = {};
+  lista.forEach(({ upmr, periodo, placa }) => {
+    const chave = `${upmr}-${periodo}`;
+    if (!agrupado[chave]) agrupado[chave] = [];
+    agrupado[chave].push(placa);
   });
-
-  const dataSelect = document.getElementById('filtro-data');
-  const optD = document.createElement('option');
-  optD.value = '';
-  optD.textContent = '-- Selecione --';
-  dataSelect.appendChild(optD);
-
-  [...dataSet].sort().forEach((data) => {
-    const opt = document.createElement('option');
-    opt.value = data;
-    const dataLocal = new Date(data).toLocaleDateString('pt-BR');
-    opt.textContent = dataLocal;
-    dataSelect.appendChild(opt);
-  });
+  return agrupado;
 }
 
 function filtrarFormularios() {
@@ -77,13 +66,27 @@ function filtrarFormularios() {
     const form = document.createElement('form');
     form.classList.add('formulario');
 
+    // Preenchendo operador e placa com base nos mapas
+    const operadores = operadoresPorUPMR[registro.UPMR] || [];
+    const placas =
+      caminhoesPorUPMRPeriodo[`${registro.UPMR}-${registro['Período']}`] || [];
+
+    const operadorOptions = operadores
+      .map((nome) => `<option value="${nome}">${nome}</option>`)
+      .join('');
+
+    const placa = placas.length > 0 ? placas[0] : '';
+
     form.innerHTML = `
       <h3>${registro.UPMR} - ${new Date(
       registro['Data da Coleta']
     ).toLocaleDateString('pt-BR')} (${registro['Período']})</h3>
 
       <label>Operador:</label>
-      <input type="text" name="operador" required>
+      <select name="operador" required>
+        <option value="">-- Selecione --</option>
+        ${operadorOptions}
+      </select>
 
       <label>Horário Início:</label>
       <input type="time" name="inicio" required>
@@ -126,7 +129,7 @@ function filtrarFormularios() {
 
       <input type="hidden" name="_linha" value="${registro._linha}">
       <input type="hidden" name="upmr" value="${registro.UPMR}">
-      <input type="hidden" name="placa" value="${registro.Caminhão}">
+      <input type="hidden" name="placa" value="${placa}">
       <input type="hidden" name="data" value="${registro['Data da Coleta']}">
       <input type="hidden" name="periodo" value="${registro['Período']}">
       <input type="hidden" name="setor" value="${registro.Setor}">
@@ -140,7 +143,6 @@ function filtrarFormularios() {
       e.preventDefault();
       const formData = new FormData(form);
 
-      // 🚫 Verificação de campos obrigatórios
       const obrigatorios = [
         'operador',
         'inicio',
